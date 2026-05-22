@@ -5,15 +5,16 @@
 <br>
 
 ![Status](https://img.shields.io/badge/Repo_Status-Evolving-1F2937?style=flat-square)
-[![License](https://img.shields.io/badge/License-MIT-1F2937?style=flat-square)](https://github.com/Syntropys/web-frontend/blob/main/LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-1F2937?style=flat-square)](https://github.com/Syntropys/ml-service/blob/main/LICENSE)
 [![Lead Dev](https://img.shields.io/badge/Lead_Dev-@Zevhys-1F2937?style=flat-square)]()
+[![Dev](https://img.shields.io/badge/Dev-@brayone--no--xv-1F2937?style=flat-square)]()
 [![Dev](https://img.shields.io/badge/Dev-@rohidrivaldi-1F2937?style=flat-square)]()
 ![Created](https://img.shields.io/badge/Created-18--May--2026-1F2937?style=flat-square)
 ![Version](https://img.shields.io/badge/Version-v0.1.0--beta-1F2937?style=flat-square)
-![Repo Size](https://img.shields.io/github/repo-size/Syntropys/web-frontend?label=Repo%20Size&color=1F2937&style=flat-square)
-![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FSyntropys%2Fweb-frontend&countColor=%231F2937&style=flat-square&labelStyle=none)
-[![Issues Welcome](https://img.shields.io/badge/Issues-Welcome-1F2937.svg?style=flat-square)](https://github.com/Syntropys/web-frontend/issues)
-[![Pull Requests Welcome](https://img.shields.io/badge/Pull%20Requests-Welcome-1F2937.svg?style=flat-square)](https://github.com/Syntropys/web-frontend/pulls)
+![Repo Size](https://img.shields.io/github/repo-size/Syntropys/ml-service?label=Repo%20Size&color=1F2937&style=flat-square)
+![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FSyntropys%2Fml-service&countColor=%231F2937&style=flat-square&labelStyle=none)
+[![Issues Welcome](https://img.shields.io/badge/Issues-Welcome-1F2937.svg?style=flat-square)](https://github.com/Syntropys/ml-service/issues)
+[![Pull Requests Welcome](https://img.shields.io/badge/Pull%20Requests-Welcome-1F2937.svg?style=flat-square)](https://github.com/Syntropys/ml-service/pulls)
 
 </div>
 
