@@ -19,7 +19,7 @@
 
 ---
 
-# 🧠 ML Training Pipeline
+# ⚡ Model Inference API
 
 lorem ipsum
 
