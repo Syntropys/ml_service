@@ -1,16 +1,16 @@
 # ⚡ Model Inference API
 
 ![Status](https://img.shields.io/badge/Repo_Status-Evolving-1F2937?style=flat-square)
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-1F2937?style=flat-square)](https://github.com/Syntropys/ml-service/blob/main/LICENSE)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-1F2937?style=flat-square)](https://github.com/Syntropys/ml_service/blob/main/LICENSE)
 [![Lead Dev](https://img.shields.io/badge/Lead_Dev-@Zevhys-1F2937?style=flat-square)]()
 [![Dev](https://img.shields.io/badge/Dev-@brayone--no--xv-1F2937?style=flat-square)]()
 [![Dev](https://img.shields.io/badge/Dev-@rohidrivaldi-1F2937?style=flat-square)]()
 ![Created](https://img.shields.io/badge/Created-18--May--2026-1F2937?style=flat-square)
 ![Version](https://img.shields.io/badge/Version-v0.1.0--beta-1F2937?style=flat-square)
-![Repo Size](https://img.shields.io/github/repo-size/Syntropys/ml-service?label=Repo%20Size&color=1F2937&style=flat-square)
-![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FSyntropys%2Fml-service&countColor=%231F2937&style=flat-square&labelStyle=none)
-[![Issues Welcome](https://img.shields.io/badge/Issues-Welcome-1F2937.svg?style=flat-square)](https://github.com/Syntropys/ml-service/issues)
-[![Pull Requests Welcome](https://img.shields.io/badge/Pull%20Requests-Welcome-1F2937.svg?style=flat-square)](https://github.com/Syntropys/ml-service/pulls)
+![Repo Size](https://img.shields.io/github/repo-size/Syntropys/ml_service?label=Repo%20Size&color=1F2937&style=flat-square)
+![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FSyntropys%2Fml_service&countColor=%231F2937&style=flat-square&labelStyle=none)
+[![Issues Welcome](https://img.shields.io/badge/Issues-Welcome-1F2937.svg?style=flat-square)](https://github.com/Syntropys/ml_service/issues)
+[![Pull Requests Welcome](https://img.shields.io/badge/Pull%20Requests-Welcome-1F2937.svg?style=flat-square)](https://github.com/Syntropys/ml_service/pulls)
 
 This repository holds the backend API for our machine learning project. It acts as the bridge between our trained models and the frontend web interface. The main job of this service is to handle incoming data, perform real-time inference, and smoothly deliver the prediction results back to the user.
 
