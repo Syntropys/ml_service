@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # -----------------------------------------------------------------------
+  # FastAPI ML Bridge — API Gateway
+  # -----------------------------------------------------------------------
+  fastapi-ml-bridge:
+    build:
+      context: ./fastapi
+      dockerfile: Dockerfile
+    container_name: fastapi-ml-bridge
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount MLflow tracking DB and artifacts from paddy_detection
+      - ../paddy_detection/mlruns.db:/app/mlruns.db:ro
+      - ../paddy_detection/mlruns:/app/mlruns:ro
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL:-https://mawewomqcdnsqnxmkjlq.supabase.co}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:-super-secret-jwt-token}
+      - ML_SERVICE_URL=${ML_SERVICE_URL:-http://ml-service:8000}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-sqlite:///mlruns.db}
+      - DEBUG=${DEBUG:-false}
+    restart: unless-stopped
+    depends_on:
+      - ml-service
+    networks:
+      - agrolytics-net
+
+  # -----------------------------------------------------------------------
+  # ML Service — Paddy Disease Detection (Soft Voting Ensemble)
+  # -----------------------------------------------------------------------
+  ml-service:
+    build:
+      context: ../paddy_detection
+      dockerfile: Dockerfile
+    container_name: ml-service
+    ports:
+      - "5000:8000"
+    volumes:
+      - ../paddy_detection/models:/app/models:ro
+      - ../paddy_detection/exports:/app/exports:ro
+    restart: unless-stopped
+    networks:
+      - agrolytics-net
+
+  # -----------------------------------------------------------------------
+  # Prometheus — Metrics Collection
+  # -----------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    depends_on:
+      - fastapi-ml-bridge
+    networks:
+      - agrolytics-net
+
+  # -----------------------------------------------------------------------
+  # Grafana — Dashboards & Visualization
+  # -----------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    networks:
+      - agrolytics-net
+
+volumes:
+  grafana-storage:
+
+networks:
+  agrolytics-net:
+    driver: bridge
