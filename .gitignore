@@ -55,6 +55,10 @@ cover/
 *.sqlite3
 *.db
 prometheus/data/
+grafana/data/
+mlruns/
+mlruns.db
+model_dir/
 
 # ==========================================
 # IDEs and Editors

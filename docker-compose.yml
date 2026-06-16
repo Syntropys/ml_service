@@ -11,10 +11,6 @@ services:
     container_name: fastapi-ml-bridge
     ports:
       - "8000:8000"
-    volumes:
-      # Mount MLflow tracking DB and artifacts from paddy_detection
-      - ../paddy_detection/mlruns.db:/app/mlruns.db:ro
-      - ../paddy_detection/mlruns:/app/mlruns:ro
     environment:
       - SUPABASE_URL=${SUPABASE_URL:-https://mawewomqcdnsqnxmkjlq.supabase.co}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
@@ -33,15 +29,10 @@ services:
   # ML Service — Paddy Disease Detection (Soft Voting Ensemble)
   # -----------------------------------------------------------------------
   ml-service:
-    build:
-      context: ../paddy_detection
-      dockerfile: Dockerfile
+    image: agrolytics/paddy_softvoting_ensemble@sha256:144a2398309cb5d4d2aeaac146da9a7cbef77a6321e78e84b6b3f7c050d49da0
     container_name: ml-service
     ports:
       - "5000:8000"
-    volumes:
-      - ../paddy_detection/models:/app/models:ro
-      - ../paddy_detection/exports:/app/exports:ro
     restart: unless-stopped
     networks:
       - agrolytics-net
@@ -69,7 +60,7 @@ services:
     image: grafana/grafana:latest
     container_name: grafana
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
