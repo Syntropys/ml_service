@@ -12,13 +12,17 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - SUPABASE_URL=${SUPABASE_URL:-https://mawewomqcdnsqnxmkjlq.supabase.co}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-}
-      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:-super-secret-jwt-token}
-      - ML_SERVICE_URL=${ML_SERVICE_URL:-http://ml-service:8000}
-      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-sqlite:///mlruns.db}
-      - DEBUG=${DEBUG:-false}
+      - SUPABASE_URL=${SUPABASE_URL:https://mawewomqcdnsqnxmkjlq.supabase.co}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hd2V3b21xY2Ruc3FueG1ramxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NjE3NDYsImV4cCI6MjA5NTUzNzc0Nn0.C8-XJL8B6_EyBTKo7UEL9Rmz5-BMvB1Y3GG8RnkND24}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hd2V3b21xY2Ruc3FueG1ramxxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTk2MTc0NiwImV4cCI6MjA5NTUzNzc0Nn0.r5G_Yk-dY1R7gYlX8i_Xb2lK7M2HhWkHqY-q_4Y1D7M}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:super-secret-jwt-token}
+      - ML_SERVICE_URL=${ML_SERVICE_URL:http://ml-service.railway.internal:8080}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:sqlite:///mlruns.db}
+      - DEBUG=${DEBUG:false}
+    volumes:
+      # Memusatkan tracking MLflow di ml-service
+      - ./mlruns:/app/mlruns
+      - ./mlruns.db:/app/mlruns.db
     restart: unless-stopped
     depends_on:
       - ml-service
@@ -29,10 +33,21 @@ services:
   # ML Service — Paddy Disease Detection (Soft Voting Ensemble)
   # -----------------------------------------------------------------------
   ml-service:
-    image: agrolytics/paddy_softvoting_ensemble@sha256:144a2398309cb5d4d2aeaac146da9a7cbef77a6321e78e84b6b3f7c050d49da0
+    # Menggunakan image dari Docker Hub (Setup default)
+    # Jika Anda ingin build ulang secara lokal, docker-compose akan menggunakan `build` context di bawah
+    image: agrolytics/agrolytics_paddy_softvoting_ensemble:v1
+    build:
+      context: ../paddy_detection/Paddy_SoftVoting_Ensemble
+      dockerfile: Dockerfile
     container_name: ml-service
     ports:
       - "5000:8000"
+    environment:
+      - TF_ENABLE_ONEDNN_OPTS=0
+    volumes:
+      # Sinkronisasi folder tracking MLflow
+      - ./mlruns:/opt/mlflow/mlruns
+      - ./mlruns.db:/opt/mlflow/mlruns.db
     restart: unless-stopped
     networks:
       - agrolytics-net
