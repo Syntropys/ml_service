@@ -41,7 +41,7 @@ async def create_custom_forecast(
     user_id = user.get("sub", "unknown")
     model_names = [m.value for m in request.models]
 
-    job = forecast_engine.create_job(
+    job = await forecast_engine.create_job(
         region_id=request.region_id,
         horizon=request.horizon,
         models=model_names,

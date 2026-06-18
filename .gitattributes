@@ -23,4 +23,6 @@
 *.tflite binary
 *.pkl binary
 *.db binary
+*.db-journal binary
+*.sqlite binary
 *.sqlite3 binary

@@ -8,21 +8,39 @@ from __future__ import annotations
 
 import logging
 import uuid
+import time
 from datetime import datetime, timezone
 from typing import Any
+import httpx
 
 from schemas.common import JobStatus
+from core.config import settings
+from core.metrics import INFERENCE_LATENCY
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# In-memory job store (Phase 2 MVP — migrate to Supabase later)
-# ---------------------------------------------------------------------------
+# Reusable async client
+_http_client: httpx.AsyncClient | None = None
 
+def _get_client() -> httpx.AsyncClient:
+    global _http_client
+    if _http_client is None or _http_client.is_closed:
+        _http_client = httpx.AsyncClient(
+            base_url=settings.PREDICTIVE_ML_SERVICE_URL,
+            timeout=httpx.Timeout(10.0),
+        )
+    return _http_client
+
+async def close_client() -> None:
+    global _http_client
+    if _http_client is not None and not _http_client.is_closed:
+        await _http_client.aclose()
+        _http_client = None
+
+# In-memory job store for caching results temporarily
 _jobs: dict[str, dict[str, Any]] = {}
 
-
-def create_job(
+async def create_job(
     region_id: str,
     horizon: int,
     models: list[str],
@@ -30,8 +48,7 @@ def create_job(
     custom_inputs: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """
-    Create a new forecast job entry.
-    Returns the job dict with status='queued'.
+    Create a forecast job and execute it immediately against the MLflow service.
     """
     job_id = str(uuid.uuid4())
     job = {
@@ -41,51 +58,66 @@ def create_job(
         "models": models,
         "custom_inputs": custom_inputs,
         "user_id": user_id,
-        "status": JobStatus.queued.value,
+        "status": JobStatus.processing.value,
         "result": None,
         "error": None,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     _jobs[job_id] = job
-    logger.info("Forecast job created: %s (region=%s, horizon=%d)", job_id, region_id, horizon)
-    return job
+    
+    # Executing the prediction
+    start = time.perf_counter()
+    try:
+        if not custom_inputs:
+            raise ValueError("custom_inputs is required for predictive analytics")
 
+        # Expecting these exact 8 features in custom_inputs based on MLmodel schema
+        # luas_panen, tahun, curah_hujan_rataan, curah_hujan_total, suhu_rataan, suhu_maksimum, suhu_minimum, kelembapan_rataan
+        row = [
+            float(custom_inputs.get("luas_panen", 0.0)),
+            float(custom_inputs.get("tahun", datetime.now().year)),
+            float(custom_inputs.get("curah_hujan_rataan", 0.0)),
+            float(custom_inputs.get("curah_hujan_total", 0.0)),
+            float(custom_inputs.get("suhu_rataan", 0.0)),
+            float(custom_inputs.get("suhu_maksimum", 0.0)),
+            float(custom_inputs.get("suhu_minimum", 0.0)),
+            float(custom_inputs.get("kelembapan_rataan", 0.0)),
+        ]
+
+        payload = {
+            "dataframe_split": {
+                "columns": ["luas_panen", "tahun", "curah_hujan_rataan", "curah_hujan_total", "suhu_rataan", "suhu_maksimum", "suhu_minimum", "kelembapan_rataan"],
+                "data": [row]
+            }
+        }
+
+        client = _get_client()
+        response = await client.post("/invocations", json=payload)
+        response.raise_for_status()
+        
+        mlflow_resp = response.json()
+        predictions = mlflow_resp.get("predictions", [])
+        
+        # Scikit-learn PyFunc returns array of predictions
+        predicted_yield = predictions[0] if isinstance(predictions, list) else predictions
+        
+        job["result"] = {
+            "predicted_produksi": float(predicted_yield),
+            "inference_time_ms": (time.perf_counter() - start) * 1000
+        }
+        job["status"] = JobStatus.done.value
+
+    except Exception as e:
+        logger.error(f"Predictive ML Service error: {e}")
+        job["status"] = JobStatus.error.value
+        job["error"] = str(e)
+        
+    job["updated_at"] = datetime.now(timezone.utc).isoformat()
+    return job
 
 def get_job(job_id: str, user_id: str | None = None) -> dict[str, Any] | None:
-    """
-    Retrieve a job by ID.
-    If user_id is provided, only return the job if it belongs to that user.
-    """
     job = _jobs.get(job_id)
-    if job is None:
-        return None
-    if user_id and job.get("user_id") != user_id:
+    if job is None or (user_id and job.get("user_id") != user_id):
         return None
     return job
-
-
-def update_job_status(
-    job_id: str,
-    status: JobStatus,
-    result: dict[str, Any] | None = None,
-    error: str | None = None,
-) -> dict[str, Any] | None:
-    """Update job status and optionally set result or error."""
-    job = _jobs.get(job_id)
-    if job is None:
-        return None
-    job["status"] = status.value
-    job["updated_at"] = datetime.now(timezone.utc).isoformat()
-    if result is not None:
-        job["result"] = result
-    if error is not None:
-        job["error"] = error
-    return job
-
-
-def list_jobs(user_id: str | None = None) -> list[dict[str, Any]]:
-    """List all jobs, optionally filtered by user."""
-    if user_id:
-        return [j for j in _jobs.values() if j.get("user_id") == user_id]
-    return list(_jobs.values())

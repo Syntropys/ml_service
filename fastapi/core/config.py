@@ -20,7 +20,9 @@ class Settings(BaseSettings):
     SUPABASE_JWT_SECRET: str = "super-secret-jwt-token"
 
     # --- ML Service (Bridge Pattern) ---
-    ML_SERVICE_URL: str = "http://ml-service.railway.internal:8080"
+    # Default: Docker Compose network. Railway overrides via env var.
+    ML_SERVICE_URL: str = "http://ml-service:8080"
+    PREDICTIVE_ML_SERVICE_URL: str = "http://predictive-ml-service:8080"
 
     # --- MLflow Tracking ---
     MLFLOW_TRACKING_URI: str = "sqlite:///mlruns.db"
