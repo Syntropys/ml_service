@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     SUPABASE_JWT_SECRET: str = "super-secret-jwt-token"
 
     # --- ML Service (Bridge Pattern) ---
-    ML_SERVICE_URL: str = "http://ml-service:8000"
+    ML_SERVICE_URL: str = "http://ml-service.railway.internal:8080"
 
     # --- MLflow Tracking ---
     MLFLOW_TRACKING_URI: str = "sqlite:///mlruns.db"

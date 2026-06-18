@@ -33,7 +33,7 @@ class DiseasePredictionResponse(BaseModel):
     Maps to inference API output keys from handoff_manifest.json.
     """
     predicted_class: str = Field(..., examples=["bacterial_blight"])
-    confidence: float = Field(..., ge=0, le=1, examples=[0.92])
+    confidence: float = Field(..., examples=[0.92])
     top_k_predictions: list[TopKPrediction] = []
     model_used: str = Field(
         default="Paddy_SoftVoting_Ensemble/latest",

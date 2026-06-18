@@ -65,16 +65,43 @@ async def predict_disease_from_base64(image_base64: str) -> dict[str, Any]:
     start = time.perf_counter()
 
     try:
-        # Decode base64 to raw bytes
-        image_bytes = base64.b64decode(image_base64)
-
         client = _get_client()
+        
+        # MLflow model (SoftVotingEnsemble) now supports decoding base64 natively
+        # Send payload to MLflow /invocations endpoint
+        payload = {
+            "dataframe_split": {
+                "columns": ["image_base64"],
+                "data": [[image_base64]]
+            }
+        }
+        
         response = await client.post(
-            "/predict",
-            files={"file": ("image.jpg", image_bytes, "image/jpeg")},
+            "/invocations",
+            json=payload
         )
         response.raise_for_status()
-        result: dict[str, Any] = response.json()
+        
+        # MLflow returns {"predictions": [...]}
+        mlflow_resp = response.json()
+        predictions = mlflow_resp.get("predictions", [])
+        if not predictions:
+            raise RuntimeError("MLflow returned empty predictions list")
+            
+        # The PyFunc model returns a dict for the batch, we sent 1 item
+        # PyFunc output: {"predicted_class": ["class"], "confidence": [0.99], "probabilities": [[...]]}
+        pred_data = predictions if isinstance(predictions, dict) else predictions[0]
+        
+        predicted_class = pred_data.get("predicted_class", ["unknown"])[0]
+        confidence = pred_data.get("confidence", [0.0])[0]
+        
+        result = {
+            "predicted_class": predicted_class,
+            "confidence": confidence,
+            "probabilities": pred_data.get("probabilities", [[]])[0],
+            "inference_time_ms": (time.perf_counter() - start) * 1000,
+            "top_k_predictions": []  # Can calculate from probabilities if needed
+        }
 
         # --- Prometheus metrics ---
         elapsed_ms = (time.perf_counter() - start) * 1000
@@ -108,13 +135,37 @@ async def predict_disease_from_bytes(image_bytes: bytes, filename: str = "image.
     start = time.perf_counter()
 
     try:
+        # MLflow model (SoftVotingEnsemble) now supports base64 strings natively.
+        # We encode the raw bytes to base64 and send it in the dataframe_split format.
+        image_base64 = base64.b64encode(image_bytes).decode('utf-8')
+        
         client = _get_client()
-        response = await client.post(
-            "/predict",
-            files={"file": (filename, image_bytes, "image/jpeg")},
-        )
+        payload = {
+            "dataframe_split": {
+                "columns": ["image_base64"],
+                "data": [[image_base64]]
+            }
+        }
+        
+        response = await client.post("/invocations", json=payload)
         response.raise_for_status()
-        result: dict[str, Any] = response.json()
+        mlflow_resp = response.json()
+        
+        predictions = mlflow_resp.get("predictions", [])
+        if not predictions:
+            raise RuntimeError("MLflow returned empty predictions list")
+            
+        pred_data = predictions if isinstance(predictions, dict) else predictions[0]
+        predicted_class = pred_data.get("predicted_class", ["unknown"])[0]
+        confidence = pred_data.get("confidence", [0.0])[0]
+        
+        result = {
+            "predicted_class": predicted_class,
+            "confidence": confidence,
+            "probabilities": pred_data.get("probabilities", [[]])[0],
+            "inference_time_ms": (time.perf_counter() - start) * 1000,
+            "top_k_predictions": []
+        }
 
         elapsed_ms = (time.perf_counter() - start) * 1000
         INFERENCE_LATENCY.observe(elapsed_ms / 1000)
@@ -150,7 +201,7 @@ async def check_ml_service_health() -> tuple[bool, float]:
     try:
         client = _get_client()
         start = time.perf_counter()
-        response = await client.get("/", timeout=5.0)
+        response = await client.get("/ping", timeout=5.0)
         latency_ms = (time.perf_counter() - start) * 1000
         return response.status_code == 200, latency_ms
     except Exception:

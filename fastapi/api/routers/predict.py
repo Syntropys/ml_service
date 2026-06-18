@@ -122,7 +122,9 @@ async def predict_disease_upload(file: UploadFile = File(...)):
     except RuntimeError as exc:
         raise HTTPException(status_code=503, detail=str(exc))
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Inference gagal: {exc}")
+        import traceback
+        tb = traceback.format_exc()
+        raise HTTPException(status_code=500, detail=f"Inference gagal: {exc}\n\nTraceback:\n{tb}")
 
 
 # ---------------------------------------------------------------------------

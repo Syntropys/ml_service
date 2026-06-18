@@ -18,7 +18,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from fastapi.responses import Response
 
 from api.routers import admin, forecast, predict
 from core.config import settings
@@ -83,28 +84,27 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------------------------
-# Prometheus auto-instrumentation
-# Automatically exposes /metrics endpoint with:
-#   - http_requests_total
-#   - http_request_duration_seconds
-#   - http_request_size_bytes
-#   - http_response_size_bytes
-# ---------------------------------------------------------------------------
-
-Instrumentator(
-    should_group_status_codes=True,
-    should_ignore_untemplated=True,
-    excluded_handlers=["/metrics", "/docs", "/redoc", "/openapi.json"],
-).instrument(app).expose(app)
-
-
-# ---------------------------------------------------------------------------
-# API Routers
+# API Routers  (MUST be registered before Prometheus instrumentation)
 # ---------------------------------------------------------------------------
 
 app.include_router(predict.router,  prefix="/api/predict",  tags=["🔬 Prediction"])
 app.include_router(forecast.router, prefix="/api/forecast", tags=["📊 Forecast"])
 app.include_router(admin.router,    prefix="/api/admin",    tags=["🔒 Admin"])
+
+
+# ---------------------------------------------------------------------------
+# Prometheus Metrics Endpoint
+# NOTE: prometheus-fastapi-instrumentator is DISABLED because it crashes
+# on nested APIRouter objects (AttributeError: '_IncludedRouter' has no
+# attribute 'path'). Custom metrics from core/metrics.py (prediction
+# counts, inference latency, confidence gauges) are still collected and
+# exposed here.
+# ---------------------------------------------------------------------------
+
+@app.get("/metrics", include_in_schema=False)
+async def metrics():
+    """Expose Prometheus metrics (custom metrics from core/metrics.py)."""
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 # ---------------------------------------------------------------------------

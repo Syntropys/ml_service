@@ -12,13 +12,13 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - SUPABASE_URL=${SUPABASE_URL:https://mawewomqcdnsqnxmkjlq.supabase.co}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hd2V3b21xY2Ruc3FueG1ramxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NjE3NDYsImV4cCI6MjA5NTUzNzc0Nn0.C8-XJL8B6_EyBTKo7UEL9Rmz5-BMvB1Y3GG8RnkND24}
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hd2V3b21xY2Ruc3FueG1ramxxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTk2MTc0NiwImV4cCI6MjA5NTUzNzc0Nn0.r5G_Yk-dY1R7gYlX8i_Xb2lK7M2HhWkHqY-q_4Y1D7M}
-      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:super-secret-jwt-token}
-      - ML_SERVICE_URL=${ML_SERVICE_URL:http://ml-service.railway.internal:8080}
-      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:sqlite:///mlruns.db}
-      - DEBUG=${DEBUG:false}
+      - SUPABASE_URL=${SUPABASE_URL:-https://mawewomqcdnsqnxmkjlq.supabase.co}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hd2V3b21xY2Ruc3FueG1ramxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NjE3NDYsImV4cCI6MjA5NTUzNzc0Nn0.C8-XJL8B6_EyBTKo7UEL9Rmz5-BMvB1Y3GG8RnkND24}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hd2V3b21xY2Ruc3FueG1ramxxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTk2MTc0NiwImV4cCI6MjA5NTUzNzc0Nn0.r5G_Yk-dY1R7gYlX8i_Xb2lK7M2HhWkHqY-q_4Y1D7M}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:-super-secret-jwt-token}
+      - ML_SERVICE_URL=${ML_SERVICE_URL:-http://ml-service.railway.internal:8080}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-sqlite:///mlruns.db}
+      - DEBUG=true
     volumes:
       # Memusatkan tracking MLflow di ml-service
       - ./mlruns:/app/mlruns
@@ -35,15 +35,18 @@ services:
   ml-service:
     # Menggunakan image dari Docker Hub (Setup default)
     # Jika Anda ingin build ulang secara lokal, docker-compose akan menggunakan `build` context di bawah
-    image: agrolytics/agrolytics_paddy_softvoting_ensemble:v1
+    image: agrolytics/agrolytics_paddy_softvoting_ensemble:v2
     build:
       context: ../paddy_detection/Paddy_SoftVoting_Ensemble
       dockerfile: Dockerfile
     container_name: ml-service
     ports:
-      - "5000:8000"
+      - "5000:8080"
     environment:
       - TF_ENABLE_ONEDNN_OPTS=0
+      - CUDA_VISIBLE_DEVICES=-1
+      - GUNICORN_CMD_ARGS=--timeout=120
+      - MLFLOW_MODELS_WORKERS=1
     volumes:
       # Sinkronisasi folder tracking MLflow
       - ./mlruns:/opt/mlflow/mlruns

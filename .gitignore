@@ -1,12 +1,12 @@
 # ==========================================
-# Environment Variables
+# Environment Variables & Secrets
 # ==========================================
 .env
 .env.*
 !.env.example
 
 # ==========================================
-# Python
+# Python & Bytecode
 # ==========================================
 __pycache__/
 *.py[cod]
@@ -30,13 +30,17 @@ share/python-wheels/
 .installed.cfg
 *.egg
 
+# ==========================================
 # Virtual Environments
+# ==========================================
 venv/
 .venv/
 env/
 .env/
 
-# Pytest / Coverage
+# ==========================================
+# Pytest / Coverage / Linting
+# ==========================================
 .coverage
 .coverage.*
 .cache
@@ -47,18 +51,30 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+.mypy_cache/
+.ruff_cache/
 
 # ==========================================
-# Logs and Databases
+# ML Service Data & Docker Volumes
 # ==========================================
 *.log
 *.sqlite3
 *.db
-prometheus/data/
-grafana/data/
 mlruns/
 mlruns.db
+mlruns.db/
 model_dir/
+prometheus/data/
+grafana/data/
+fastapi/data/
+
+# Docker and Compressed Artifacts
+*.tar
+*.tar.gz
+*.zip
+*.rar
+*.img
+*.iso
 
 # ==========================================
 # IDEs and Editors
@@ -70,10 +86,6 @@ model_dir/
 *.swp
 *.swo
 *~
-
-# ==========================================
-# OS Generated Files
-# ==========================================
 .DS_Store
 .DS_Store?
 ._*
@@ -83,13 +95,9 @@ ehthumbs.db
 Thumbs.db
 
 # ==========================================
-# Supabase
+# Legacy / Other
 # ==========================================
 .supabase/.temp/
-
-# ==========================================
-# Legacy Frontend (safe to ignore)
-# ==========================================
 node_modules/
 dist-ssr/
 .vercel/
