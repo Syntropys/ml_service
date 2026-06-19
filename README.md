@@ -3,7 +3,7 @@
 ![Status](https://img.shields.io/badge/Repo_Status-Completed-1F2937?style=flat-square)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-1F2937?style=flat-square)](https://github.com/Syntropys/ml_service/blob/main/LICENSE)
 [![Lead Dev](https://img.shields.io/badge/Lead_Dev-@Zevhys-1F2937?style=flat-square)]()
-[![Dev](https://img.shields.io/badge/Dev-@rohidrivaldi-1F2937?style=flat-square)]()
+[![Dev](https://img.shields.io/badge/Dev-@brayone--no--xv-1F2937?style=flat-square)]()
 ![Created](https://img.shields.io/badge/Created-19--May--2026-1F2937?style=flat-square)
 ![Version](https://img.shields.io/badge/Version-v3.0.0-1F2937?style=flat-square)
 ![Repo Size](https://img.shields.io/github/repo-size/Syntropys/ml_service?label=Repo%20Size&color=1F2937&style=flat-square)
