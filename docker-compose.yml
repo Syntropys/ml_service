@@ -43,6 +43,7 @@ services:
     profiles: ["monitoring"]  # Only starts with: docker compose --profile monitoring up
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
     ports:
       - "9090:9090"
     restart: unless-stopped
@@ -65,6 +66,7 @@ services:
       - GF_USERS_ALLOW_SIGN_UP=false
     volumes:
       - grafana-storage:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
     restart: unless-stopped
     depends_on:
       - prometheus
