@@ -34,7 +34,7 @@ cp .env.example .env
 # Download from Google Drive and place in fastapi/models/disease/
 # See fastapi/models/README.md for details
 
-# 4. Run with Docker
+# 4. Run with Docker (v3.0 Single-Service)
 docker compose up --build
 
 # 5. Test
