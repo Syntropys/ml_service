@@ -71,8 +71,9 @@ grafana/data/
 fastapi/data/
 monitoring/data/
 
-# TFLite model files (too large for git, download from Google Drive)
-# *.tflite (Uncommented: ukuran file 10MB & 28MB masih di bawah batas 100MB Github)
+# TFLite models are explicitly allowed since their sizes (10MB-30MB) 
+# are well below Github's 100MB limit per file.
+# !*.tflite
 
 # Temp scripts
 _read_*.py
