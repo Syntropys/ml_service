@@ -69,6 +69,18 @@ model_dir/
 prometheus/data/
 grafana/data/
 fastapi/data/
+monitoring/data/
+
+# TFLite model files (too large for git, download from Google Drive)
+*.tflite
+
+# Temp scripts
+_read_*.py
+_check_*.py
+
+# Debug log dumps
+*_logs.txt
+error_traceback.txt
 
 # Docker and Compressed Artifacts
 *.tar

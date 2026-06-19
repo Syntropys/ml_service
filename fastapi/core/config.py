@@ -2,6 +2,7 @@
 Application configuration using pydantic-settings.
 All environment variables are loaded from .env file or system environment.
 """
+from pathlib import Path
 from pydantic_settings import BaseSettings
 
 
@@ -10,21 +11,19 @@ class Settings(BaseSettings):
 
     # --- Project ---
     PROJECT_NAME: str = "Paddy ML Bridge API"
-    VERSION: str = "2.0.0"
+    VERSION: str = "3.0.0"
     DEBUG: bool = False
 
     # --- Supabase ---
     SUPABASE_URL: str = "https://mawewomqcdnsqnxmkjlq.supabase.co"
-    SUPABASE_ANON_KEY: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hd2V3b21xY2Ruc3FueG1ramxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NjE3NDYsImV4cCI6MjA5NTUzNzc0Nn0.C8-XJL8B6_EyBTKo7UEL9Rmz5-BMvB1Y3GG8RnkND24"
-    SUPABASE_SERVICE_ROLE_KEY: str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hd2V3b21xY2Ruc3FueG1ramxxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTk2MTc0NiwiZXhwIjoyMDk1NTM3NzQ2fQ.n0qKoq62vmuAm5t1_mqv5iUDUkRrplrp331ZSFAQ8GI"
+    SUPABASE_ANON_KEY: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""
     SUPABASE_JWT_SECRET: str = "super-secret-jwt-token"
 
-    # --- ML Service (Bridge Pattern) ---
-    # Default: Docker Compose network. Railway overrides via env var.
-    ML_SERVICE_URL: str = "http://ml-service:8080"
-    PREDICTIVE_ML_SERVICE_URL: str = "http://predictive-ml-service:8080"
+    # --- Embedded Models (v3 — no external ML services) ---
+    MODEL_DIR: str = str(Path(__file__).resolve().parent.parent / "models")
 
-    # --- MLflow Tracking ---
+    # --- MLflow Tracking (optional, for experiment logging only) ---
     MLFLOW_TRACKING_URI: str = "sqlite:///mlruns.db"
 
     # --- CORS ---

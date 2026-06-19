@@ -2,119 +2,57 @@ version: '3.8'
 
 services:
   # -----------------------------------------------------------------------
-  # FastAPI ML Bridge — API Gateway
+  # Agrolytics ML Bridge — Unified API + Embedded Models
   # -----------------------------------------------------------------------
-  fastapi-ml-bridge:
+  # v3.0 Single-service architecture:
+  #   - FastAPI gateway
+  #   - Disease detection (TFLite ensemble) embedded
+  #   - Predictive analytics (XGBoost) embedded
+  #   - Supabase integration
+  #   - Prometheus metrics
+  # -----------------------------------------------------------------------
+  agrolytics-ml:
     build:
       context: ./fastapi
       dockerfile: Dockerfile
-    container_name: fastapi-ml-bridge
+    container_name: agrolytics-ml
     ports:
       - "8000:8000"
     environment:
       - SUPABASE_URL=${SUPABASE_URL:-https://mawewomqcdnsqnxmkjlq.supabase.co}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hd2V3b21xY2Ruc3FueG1ramxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NjE3NDYsImV4cCI6MjA5NTUzNzc0Nn0.C8-XJL8B6_EyBTKo7UEL9Rmz5-BMvB1Y3GG8RnkND24}
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hd2V3b21xY2Ruc3FueG1ramxxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTk2MTc0NiwImV4cCI6MjA5NTUzNzc0Nn0.r5G_Yk-dY1R7gYlX8i_Xb2lK7M2HhWkHqY-q_4Y1D7M}
-      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:-super-secret-jwt-token}
-      - ML_SERVICE_URL=${ML_SERVICE_URL:-http://ml-service:8080}
-      - PREDICTIVE_ML_SERVICE_URL=${PREDICTIVE_ML_SERVICE_URL:-http://predictive-ml-service:8080}
-      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-sqlite:///mlruns.db}
-      - DEBUG=true
-    volumes:
-      # Memusatkan tracking MLflow di ml-service
-      - ./mlruns:/app/mlruns
-      - ./mlruns.db:/app/mlruns.db
-    restart: unless-stopped
-    depends_on:
-      - ml-service
-      - predictive-ml-service
-    networks:
-      - agrolytics-net
-
-  # -----------------------------------------------------------------------
-  # ML Service — Paddy Disease Detection (Soft Voting Ensemble)
-  # -----------------------------------------------------------------------
-  ml-service:
-    image: agrolytics/agrolytics_disease_classification:v1
-    build:
-      context: ../ai_models/disease_classification/Agrolytics_Disease_Classification
-      dockerfile: Dockerfile
-    container_name: ml-service
-    ports:
-      - "5000:8080"
-    environment:
-      - TF_ENABLE_ONEDNN_OPTS=0
-      - CUDA_VISIBLE_DEVICES=-1
-      - GUNICORN_CMD_ARGS=--timeout=120
-      - MLFLOW_MODELS_WORKERS=1
-    volumes:
-      # Sinkronisasi folder tracking MLflow
-      - ./mlruns:/opt/mlflow/mlruns
-      - ./mlruns.db:/opt/mlflow/mlruns.db
-      # Override baked-in model with local directory to avoid 20-min rebuilds
-      - ../ai_models/disease_classification/Agrolytics_Disease_Classification/model_dir:/opt/ml/model
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
+      - DEBUG=${DEBUG:-false}
     restart: unless-stopped
     networks:
       - agrolytics-net
 
   # -----------------------------------------------------------------------
-  # ML Service — Predictive Analytics (Random Forest)
-  # -----------------------------------------------------------------------
-  predictive-ml-service:
-    image: agrolytics/agrolytics_predictive_analytics:v1
-    build:
-      context: ../ai_models/predictive_analytics/Agrolytics_Predictive_Analytics
-      dockerfile: Dockerfile
-    container_name: predictive-ml-service
-    ports:
-      - "5002:8080"
-    environment:
-      - GUNICORN_CMD_ARGS=--timeout=120
-      - MLFLOW_MODELS_WORKERS=1
-    restart: unless-stopped
-    networks:
-      - agrolytics-net
-
-  # -----------------------------------------------------------------------
-  # MLflow Tracking Server — Centralized Experiment Tracking
-  # -----------------------------------------------------------------------
-  mlflow-server:
-    image: python:3.12-slim
-    container_name: mlflow-server
-    command: >
-      bash -c "pip install mlflow && mlflow server --host 0.0.0.0 --port 5001 --backend-store-uri sqlite:////app/mlruns.db --default-artifact-root mlflow-artifacts:/ --artifacts-destination /app/mlruns"
-    ports:
-      - "5001:5001"
-    volumes:
-      # Mount tracking storage locally
-      - ./mlruns:/app/mlruns
-      - ./mlruns.db:/app/mlruns.db
-    restart: unless-stopped
-    networks:
-      - agrolytics-net
-
-  # -----------------------------------------------------------------------
-  # Prometheus — Metrics Collection
+  # Prometheus — Metrics Collection (optional, for local dev only)
+  # On Railway, use built-in metrics dashboard instead.
   # -----------------------------------------------------------------------
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
+    profiles: ["monitoring"]  # Only starts with: docker compose --profile monitoring up
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
       - "9090:9090"
     restart: unless-stopped
     depends_on:
-      - fastapi-ml-bridge
+      - agrolytics-ml
     networks:
       - agrolytics-net
 
   # -----------------------------------------------------------------------
-  # Grafana — Dashboards & Visualization
+  # Grafana — Dashboards (optional, for local dev only)
   # -----------------------------------------------------------------------
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
+    profiles: ["monitoring"]
     ports:
       - "3001:3000"
     environment:

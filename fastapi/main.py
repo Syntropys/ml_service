@@ -1,15 +1,13 @@
 """
 Paddy ML Bridge API — Application Entry Point
 
-FastAPI gateway bridging the Agrolytics frontend (Vercel) with:
-    • Soft Voting Ensemble ML service (Paddy Disease Detection)
-    • Supabase PostgreSQL (predictions, ingestion, audit)
-    • Prometheus + Grafana (monitoring & observability)
+FastAPI gateway with embedded ML models for the Agrolytics platform:
+    • Soft Voting Ensemble (DenseNet121 + MobileNetV2) via TFLite
+    • XGBoost yield prediction via joblib
+    • Supabase PostgreSQL integration
+    • Prometheus metrics
 
-Endpoints are routed via Vercel rewrites:
-    /api/predict/*  → this service
-    /api/forecast/* → this service
-    /api/admin/*    → this service
+v3.0 — Single-service architecture (no external ML containers)
 """
 from __future__ import annotations
 
@@ -42,15 +40,21 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Manage application lifecycle resources."""
+    """Manage application lifecycle — load models at startup."""
     logger.info("🚀 Starting %s v%s", settings.PROJECT_NAME, settings.VERSION)
-    logger.info("   ML Service URL: %s", settings.ML_SERVICE_URL)
-    logger.info("   Supabase URL:   %s", settings.SUPABASE_URL)
-    logger.info("   Debug mode:     %s", settings.DEBUG)
+    logger.info("   Model directory: %s", settings.MODEL_DIR)
+    logger.info("   Supabase URL:    %s", settings.SUPABASE_URL)
+    logger.info("   Debug mode:      %s", settings.DEBUG)
+
+    # Load embedded ML models
+    from services.ml_engine import load_models as load_disease_models
+    from services.forecast_engine import load_models as load_predictive_models
+
+    load_disease_models()
+    load_predictive_models()
+
     yield
-    # Shutdown: close async HTTP client
-    from services.ml_engine import close_client
-    await close_client()
+
     logger.info("👋 Shutting down %s", settings.PROJECT_NAME)
 
 
@@ -61,9 +65,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
-        "Bridge API untuk Soft Voting Ensemble model (DenseNet121 + MobileNetV2_v3), "
-        "MLflow tracking, Grafana monitoring, dan Prometheus metrics. "
-        "Bagian dari platform Agrolytics — Smart Agricultural BI."
+        "Unified ML service for Agrolytics — Smart Agricultural BI. "
+        "Embeds Soft Voting Ensemble (TFLite) for disease detection and "
+        "XGBoost for yield prediction. Single-service architecture for "
+        "Railway free tier deployment."
     ),
     version=settings.VERSION,
     lifespan=lifespan,
@@ -84,7 +89,7 @@ app.add_middleware(
 )
 
 # ---------------------------------------------------------------------------
-# API Routers  (MUST be registered before Prometheus instrumentation)
+# API Routers
 # ---------------------------------------------------------------------------
 
 app.include_router(predict.router,  prefix="/api/predict",  tags=["🔬 Prediction"])
@@ -94,11 +99,6 @@ app.include_router(admin.router,    prefix="/api/admin",    tags=["🔒 Admin"])
 
 # ---------------------------------------------------------------------------
 # Prometheus Metrics Endpoint
-# NOTE: prometheus-fastapi-instrumentator is DISABLED because it crashes
-# on nested APIRouter objects (AttributeError: '_IncludedRouter' has no
-# attribute 'path'). Custom metrics from core/metrics.py (prediction
-# counts, inference latency, confidence gauges) are still collected and
-# exposed here.
 # ---------------------------------------------------------------------------
 
 @app.get("/metrics", include_in_schema=False)
@@ -116,7 +116,7 @@ async def metrics():
     response_model=HealthResponse,
     tags=["❤️ Health"],
     summary="Status Kesehatan API",
-    description="Cek status API dan seluruh dependensi (ML Service, Supabase).",
+    description="Cek status API dan seluruh dependensi (ML Models, Supabase).",
 )
 async def health_check():
     """
@@ -124,26 +124,34 @@ async def health_check():
     Reports individual service status and overall API health.
     """
     from core.metrics import ML_SERVICE_HEALTHY, SUPABASE_HEALTHY
+    from services.ml_engine import is_loaded as disease_loaded, get_load_error as disease_error
+    from services.forecast_engine import is_loaded as predictive_loaded, get_load_error as predictive_error
 
     services: list[ServiceHealth] = []
     all_healthy = True
 
-    # Check ML Service
-    try:
-        from services.ml_engine import check_ml_service_health
-        ml_ok, ml_latency = await check_ml_service_health()
-        ML_SERVICE_HEALTHY.set(1.0 if ml_ok else 0.0)
-        services.append(ServiceHealth(
-            name="ml-service",
-            status="ok" if ml_ok else "down",
-            latency_ms=round(ml_latency, 2),
-        ))
-        if not ml_ok:
-            all_healthy = False
-    except Exception:
-        ML_SERVICE_HEALTHY.set(0.0)
-        services.append(ServiceHealth(name="ml-service", status="down"))
+    # Check Disease Detection Model
+    disease_ok = disease_loaded()
+    ML_SERVICE_HEALTHY.set(1.0 if disease_ok else 0.0)
+    services.append(ServiceHealth(
+        name="disease-model",
+        status="ok" if disease_ok else "not-loaded",
+        latency_ms=0.0,
+    ))
+    if not disease_ok:
         all_healthy = False
+        logger.debug("Disease model status: %s", disease_error())
+
+    # Check Predictive Model
+    pred_ok = predictive_loaded()
+    services.append(ServiceHealth(
+        name="predictive-model",
+        status="ok" if pred_ok else "not-loaded",
+        latency_ms=0.0,
+    ))
+    if not pred_ok:
+        all_healthy = False
+        logger.debug("Predictive model status: %s", predictive_error())
 
     # Check Supabase
     try:
@@ -160,7 +168,6 @@ async def health_check():
     except Exception:
         SUPABASE_HEALTHY.set(0.0)
         services.append(ServiceHealth(name="supabase", status="degraded"))
-        # Supabase failure is non-critical (mock fallback exists)
 
     return HealthResponse(
         status="ok" if all_healthy else "degraded",
@@ -176,9 +183,17 @@ async def health_check():
 @app.get("/", tags=["❤️ Health"])
 async def root():
     """Root endpoint — basic API information."""
+    from services.ml_engine import is_loaded as disease_loaded
+    from services.forecast_engine import is_loaded as predictive_loaded
+
     return {
         "name": settings.PROJECT_NAME,
         "version": settings.VERSION,
+        "architecture": "single-service-embedded",
+        "models": {
+            "disease_detection": "loaded" if disease_loaded() else "not-loaded",
+            "predictive_analytics": "loaded" if predictive_loaded() else "not-loaded",
+        },
         "docs": "/docs",
         "health": "/api/health",
         "metrics": "/metrics",

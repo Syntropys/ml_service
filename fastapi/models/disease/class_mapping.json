@@ -1,0 +1,39 @@
+{
+  "class_to_index": {
+    "bacterial_blight": 0,
+    "brown_spot": 1,
+    "healthy": 2,
+    "hispa": 3,
+    "leaf_blast": 4,
+    "leaf_scald": 5,
+    "leaf_smut": 6,
+    "narrow_brown_spot": 7,
+    "sheath_blight": 8,
+    "tungro": 9
+  },
+  "index_to_class": {
+    "0": "bacterial_blight",
+    "1": "brown_spot",
+    "2": "healthy",
+    "3": "hispa",
+    "4": "leaf_blast",
+    "5": "leaf_scald",
+    "6": "leaf_smut",
+    "7": "narrow_brown_spot",
+    "8": "sheath_blight",
+    "9": "tungro"
+  },
+  "num_classes": 10,
+  "class_names": [
+    "bacterial_blight",
+    "brown_spot",
+    "healthy",
+    "hispa",
+    "leaf_blast",
+    "leaf_scald",
+    "leaf_smut",
+    "narrow_brown_spot",
+    "sheath_blight",
+    "tungro"
+  ]
+}
