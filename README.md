@@ -5,7 +5,7 @@
 [![Lead Dev](https://img.shields.io/badge/Lead_Dev-@Zevhys-1F2937?style=flat-square)]()
 [![Dev](https://img.shields.io/badge/Dev-@brayone--no--xv-1F2937?style=flat-square)](https://github.com/brayone-no-xv)
 ![Created](https://img.shields.io/badge/Created-19--May--2026-1F2937?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v3.0.0-1F2937?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v1.0.0-1F2937?style=flat-square)
 ![Repo Size](https://img.shields.io/github/repo-size/Syntropys/ml_service?label=Repo%20Size&color=1F2937&style=flat-square)
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FSyntropys%2Fml_service&countColor=%231F2937&style=flat-square&labelStyle=none)
 [![Issues Welcome](https://img.shields.io/badge/Issues-Welcome-1F2937.svg?style=flat-square)](https://github.com/Syntropys/ml_service/issues)
