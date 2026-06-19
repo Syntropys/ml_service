@@ -20,10 +20,15 @@ services:
       - "8000:8000"
     environment:
       - SUPABASE_URL=${SUPABASE_URL:-https://mawewomqcdnsqnxmkjlq.supabase.co}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
-      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
-      - DEBUG=${DEBUG:-false}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hd2V3b21xY2Ruc3FueG1ramxxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NjE3NDYsImV4cCI6MjA5NTUzNzc0Nn0.C8-XJL8B6_EyBTKo7UEL9Rmz5-BMvB1Y3GG8RnkND24}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hd2V3b21xY2Ruc3FueG1ramxxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTk2MTc0NiwImV4cCI6MjA5NTUzNzc0Nn0.r5G_Yk-dY1R7gYlX8i_Xb2lK7M2HhWkHqY-q_4Y1D7M}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET:-super-secret-jwt-token}
+      - ML_SERVICE_URL=${ML_SERVICE_URL:-http://ml-service:8080}
+      - PREDICTIVE_ML_SERVICE_URL=${PREDICTIVE_ML_SERVICE_URL:-http://predictive-ml-service:8080}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-sqlite:///mlruns.db}
+      - DEBUG=true
+    volumes:
+      - ./fastapi/models:/app/models
     restart: unless-stopped
     networks:
       - agrolytics-net

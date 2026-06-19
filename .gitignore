@@ -72,7 +72,7 @@ fastapi/data/
 monitoring/data/
 
 # TFLite model files (too large for git, download from Google Drive)
-*.tflite
+# *.tflite (Uncommented: ukuran file 10MB & 28MB masih di bawah batas 100MB Github)
 
 # Temp scripts
 _read_*.py
