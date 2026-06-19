@@ -17,7 +17,7 @@ import numpy as np
 
 from schemas.common import JobStatus
 from core.config import settings
-from core.metrics import INFERENCE_LATENCY
+from core.metrics import YIELD_PREDICTION_LATENCY, YIELD_PREDICTION_REQUESTS
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +137,8 @@ async def create_job(
         predicted_value = float(_xgb_model.predict(X)[0])
 
         elapsed_ms = (time.perf_counter() - start) * 1000
-        INFERENCE_LATENCY.observe(elapsed_ms / 1000)
+        YIELD_PREDICTION_LATENCY.observe(elapsed_ms / 1000)
+        YIELD_PREDICTION_REQUESTS.labels(model_name="xgboost", region_id=region_id).inc()
 
         job["result"] = {
             "predicted_produksi": predicted_value,
