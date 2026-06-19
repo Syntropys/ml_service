@@ -17,7 +17,7 @@ supabase>=2.0.0
 # === ML — Disease Detection (TFLite) ===
 # Use tflite-runtime (lightweight, ~5 MB) instead of full tensorflow (~800 MB)
 # On Railway free tier, full TF would exceed 512 MB RAM limit
-tflite-runtime>=2.14.0; platform_machine != 'aarch64'
+ai-edge-litert>=0.1.0; platform_machine != 'aarch64'
 numpy>=1.26.0
 Pillow>=10.0.0
 

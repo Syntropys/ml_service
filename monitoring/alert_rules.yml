@@ -1,0 +1,42 @@
+groups:
+  - name: agrolytics_stability_alerts
+    rules:
+      # 1. Alert: ML Service (Model AI) Down
+      - alert: MLServiceDown
+        expr: paddy_ml_service_healthy == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Model AI Agrolytics offline"
+          description: "Sistem gagal memuat model TFLite atau XGBoost selama lebih dari 1 menit."
+
+      # 2. Alert: Supabase Database Down
+      - alert: SupabaseConnectionLost
+        expr: paddy_supabase_healthy == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Koneksi Supabase terputus"
+          description: "API Agrolytics gagal melakukan ping ke database Supabase selama lebih dari 1 menit."
+
+      # 3. Alert: Latensi Inferensi Terlalu Tinggi (>1 detik)
+      - alert: HighInferenceLatency
+        expr: (rate(paddy_inference_latency_seconds_sum[5m]) / rate(paddy_inference_latency_seconds_count[5m])) > 1.0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Performa AI melambat"
+          description: "Rata-rata waktu inferensi TFLite melebih 1 detik selama 2 menit terakhir. Kemungkinan server CPU *bottleneck*."
+
+      # 4. Alert: Terlalu Banyak Error API (Gateway Error)
+      - alert: HighApiErrorRate
+        expr: (sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m]))) * 100 > 5
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Tingkat error API sangat tinggi"
+          description: "Lebih dari 5% permintaan ke API menghasilkan error 5xx selama 2 menit terakhir."

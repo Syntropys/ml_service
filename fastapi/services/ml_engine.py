@@ -94,17 +94,20 @@ def load_models() -> None:
         return
 
     try:
-        import tflite_runtime.interpreter as tflite
+        import ai_edge_litert.interpreter as tflite
     except ImportError:
         try:
-            import tensorflow.lite as tflite
+            import tflite_runtime.interpreter as tflite
         except ImportError:
-            _load_error = (
-                "Neither tflite_runtime nor tensorflow is installed. "
-                "Install with: pip install tflite-runtime"
-            )
-            logger.error("Disease models NOT loaded: %s", _load_error)
-            return
+            try:
+                import tensorflow.lite as tflite
+            except ImportError:
+                _load_error = (
+                    "No TFLite runtime found. "
+                    "Install with: pip install ai-edge-litert"
+                )
+                logger.error("Disease models NOT loaded: %s", _load_error)
+                return
 
     try:
         _mobilenet_interpreter = tflite.Interpreter(model_path=str(mobilenet_path))
