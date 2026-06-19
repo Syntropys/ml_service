@@ -1,46 +1,105 @@
-# ⚡ Model Inference API
+# 🌾 Agrolytics ML Service
 
-![Status](https://img.shields.io/badge/Repo_Status-Evolving-1F2937?style=flat-square)
+![Status](https://img.shields.io/badge/Repo_Status-Completed-1F2937?style=flat-square)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-1F2937?style=flat-square)](https://github.com/Syntropys/ml_service/blob/main/LICENSE)
 [![Lead Dev](https://img.shields.io/badge/Lead_Dev-@Zevhys-1F2937?style=flat-square)]()
-[![Dev](https://img.shields.io/badge/Dev-@brayone--no--xv-1F2937?style=flat-square)]()
 [![Dev](https://img.shields.io/badge/Dev-@rohidrivaldi-1F2937?style=flat-square)]()
-![Created](https://img.shields.io/badge/Created-18--May--2026-1F2937?style=flat-square)
-![Version](https://img.shields.io/badge/Version-v0.1.0--beta-1F2937?style=flat-square)
+![Created](https://img.shields.io/badge/Created-19--May--2026-1F2937?style=flat-square)
+![Version](https://img.shields.io/badge/Version-v3.0.0-1F2937?style=flat-square)
 ![Repo Size](https://img.shields.io/github/repo-size/Syntropys/ml_service?label=Repo%20Size&color=1F2937&style=flat-square)
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fgithub.com%2FSyntropys%2Fml_service&countColor=%231F2937&style=flat-square&labelStyle=none)
 [![Issues Welcome](https://img.shields.io/badge/Issues-Welcome-1F2937.svg?style=flat-square)](https://github.com/Syntropys/ml_service/issues)
 [![Pull Requests Welcome](https://img.shields.io/badge/Pull%20Requests-Welcome-1F2937.svg?style=flat-square)](https://github.com/Syntropys/ml_service/pulls)
 
-This repository holds the backend API for our machine learning project. It acts as the bridge between our trained models and the frontend web interface. The main job of this service is to handle incoming data, perform real-time inference, and smoothly deliver the prediction results back to the user.
+Unified ML inference service for the **Agrolytics** Smart Agricultural BI platform. Single-service architecture with embedded TFLite ensemble and XGBoost models — optimized for Railway free tier (~310 MB RAM).
+
+# 🏗️ Architecture
+
+```
+Frontend (Vercel) → FastAPI Bridge (Railway) → Supabase (PostgreSQL)
+                         ↓
+                  Embedded Models:
+                  ├── Disease Detection (TFLite Ensemble)
+                  └── Yield Prediction (XGBoost)
+```
+
+### What changed in v3.0?
+- **Before**: 3 separate containers (FastAPI Bridge + ML Service + Predictive ML Service) connected via HTTP. Required Docker Hub images, MLflow serving, ~2 GB RAM.
+- **Now**: 1 single service with models loaded in-process. ~310 MB RAM. No external ML containers needed.
 
 # 🛠 Tech Stack
 
-<img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white"/> <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white"/> <img src="https://img.shields.io/badge/Pydantic-E92063?style=flat-square&logo=pydantic&logoColor=white"/> <img src="https://img.shields.io/badge/Uvicorn-499848?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0xMyAyTDQuMDkzIDEyLjY4OGMtLjM0Ny40MTYtLjUyMS42MjQtLjUyMy44LS4wMDIuMTUzLjA2Ni4yOTguMTg1LjM5NS4xMzcuMTEyLjQwOC4xMTIuOTQ5LjExMmg2LjI5NkwxMSAyMmw4LjkwNy0xMC42ODhjLjM0Ny0uNDE2LjUyMS0uNjI0LjUyMy0uOC4wMDItLjE1My0uMDY2LS4yOTgtLjE4NS0uMzk1LS4xMzctLjExMi0uNDA4LS4xMTItLjk0OS0uMTEySDEzVjJ6Ii8+PC9zdmc+&logoColor=white"/> <img src="https://img.shields.io/badge/Pytest-0A9EDC?style=flat-square&logo=pytest&logoColor=white"/> <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white"/> <img src="https://img.shields.io/badge/Cloudflare_R2-F38020?style=flat-square&logo=cloudflare&logoColor=white"/> <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white"/> <img src="https://img.shields.io/badge/Railway-0B0D0E?style=flat-square&logo=railway&logoColor=white"/>
+<img src="https://img.shields.io/badge/Python_3.12-3776AB?style=flat-square&logo=python&logoColor=white"/> <img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white"/> <img src="https://img.shields.io/badge/TFLite-FF6F00?style=flat-square&logo=tensorflow&logoColor=white"/> <img src="https://img.shields.io/badge/XGBoost-EC4E20?style=flat-square"/> <img src="https://img.shields.io/badge/scikit--learn-F7931E?style=flat-square&logo=scikit-learn&logoColor=white"/> <img src="https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white"/> <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=white"/> <img src="https://img.shields.io/badge/Railway-0B0D0E?style=flat-square&logo=railway&logoColor=white"/> <img src="https://img.shields.io/badge/Prometheus-E6522C?style=flat-square&logo=prometheus&logoColor=white"/>
 
-# 🚀 Setup
+| Layer | Technology | Purpose |
+| :---- | :--------- | :------ |
+| **Framework** | FastAPI + Uvicorn | Async REST API server |
+| **Disease ML** | tflite-runtime (DenseNet121 + MobileNetV2) | 10-class paddy disease ensemble |
+| **Predictive ML** | XGBoost + scikit-learn | Yield prediction (ton/ha) |
+| **Database** | Supabase PostgreSQL | Data storage with JWT auth |
+| **Monitoring** | Prometheus metrics | `/metrics` endpoint |
+| **Container** | Docker (Python 3.12 slim) | Reproducible builds |
+| **Hosting** | Railway | Auto-deploy from Git |
 
-1. Clone Repository
+# 📡 API Endpoints
+
+| Method | Path | Description | Auth |
+| :----- | :--- | :---------- | :--- |
+| `POST` | `/api/predict/disease` | Disease classification (base64 image) | Optional |
+| `POST` | `/api/predict/disease/upload` | Disease classification (file upload) | Optional |
+| `POST` | `/api/predict/yield` | Yield prediction | JWT |
+| `POST` | `/api/forecast/custom` | Custom forecast job | JWT |
+| `GET` | `/api/forecast/jobs/{id}` | Forecast job status | JWT |
+| `GET` | `/api/health` | Health check (services status) | No |
+| `GET` | `/metrics` | Prometheus metrics | No |
+| `GET` | `/docs` | Swagger UI documentation | No |
+
+# 🧠 Models
+
+| Model | Type | Size | Target |
+| :---- | :--- | :--- | :----- |
+| Disease Ensemble | TFLite (DenseNet121 + MobileNetV2) | 37 MB | 10-class paddy disease |
+| XGBoost | joblib | 0.47 MB | Yield prediction (ton) |
+
+# 🚀 Getting Started
+
+1. **Clone the repository:**
 
    ```bash
-   git clone
+   git clone https://github.com/Syntropys/ml_service.git
+   cd ml_service
    ```
 
-# 🔐 Configuration
+2. **Set up environment:**
 
-lorem
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Supabase keys
+   ```
 
-# ⚙️ Usage
+3. **(Optional) Add TFLite model files:**
 
-lorem
+   ```bash
+   # Download from Google Drive and place in fastapi/models/disease/
+   # See fastapi/models/README.md for details
+   ```
 
-# 🔌 API Endpoints
+4. **Run with Docker:**
 
-lorem
+   ```bash
+   docker compose up --build
+   ```
 
-# 🧪 Testing
+5. **Test:**
 
-lorem
+   ```bash
+   curl http://localhost:8000/api/health
+   curl http://localhost:8000/docs  # Swagger UI
+   ```
+
+# 🚂 Deploy to Railway
+
+See [RAILWAY_DEPLOYMENT_GUIDE.md](RAILWAY_DEPLOYMENT_GUIDE.md) for step-by-step instructions.
 
 # 🤝 Contributing
 
