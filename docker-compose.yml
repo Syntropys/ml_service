@@ -51,6 +51,8 @@ services:
       # Sinkronisasi folder tracking MLflow
       - ./mlruns:/opt/mlflow/mlruns
       - ./mlruns.db:/opt/mlflow/mlruns.db
+      # Override baked-in model with local directory to avoid 20-min rebuilds
+      - ../ai_models/disease_classification/Agrolytics_Disease_Classification/model_dir:/opt/ml/model
     restart: unless-stopped
     networks:
       - agrolytics-net
@@ -98,7 +100,7 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
       - "9090:9090"
     restart: unless-stopped

@@ -1,0 +1,22 @@
+2026-06-19 00:25:00,934 [DEBUG] asyncio: Using selector: EpollSelector
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+2026-06-19 00:25:00,960 [INFO] main: 🚀 Starting Paddy ML Bridge API v2.0.0
+2026-06-19 00:25:00,960 [INFO] main:    ML Service URL: http://ml-service:8080
+2026-06-19 00:25:00,960 [INFO] main:    Supabase URL:   https://mawewomqcdnsqnxmkjlq.supabase.co
+2026-06-19 00:25:00,960 [INFO] main:    Debug mode:     True
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     172.18.0.6:51520 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     172.18.0.6:46776 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     172.18.0.6:43444 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     172.18.0.6:40680 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     172.18.0.6:40040 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     172.18.0.6:40260 - "GET /metrics HTTP/1.1" 200 OK
+2026-06-19 00:26:36,815 [DEBUG] httpcore.connection: connect_tcp.started host='ml-service' port=8080 local_address=None timeout=10.0 socket_options=None
+2026-06-19 00:26:36,942 [DEBUG] httpcore.connection: connect_tcp.failed exception=ConnectError(gaierror(-2, 'Name or service not known'))
+2026-06-19 00:26:36,943 [ERROR] services.ml_engine: Failed to reach ML service at http://ml-service:8080: [Errno -2] Name or service not known
+INFO:     172.18.0.1:57914 - "POST /api/predict/disease/upload HTTP/1.1" 503 Service Unavailable
+INFO:     172.18.0.6:33836 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     172.18.0.6:39118 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     172.18.0.6:60840 - "GET /metrics HTTP/1.1" 200 OK
